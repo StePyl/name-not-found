@@ -3,56 +3,61 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
-{
-    public delegate void ActionDelegate(Rigidbody2D param1);
 
-    private Dictionary<KeyCode, ActionDelegate> keyCodeToActions;
+{
+    Rigidbody2D body;
+    BoxCollider2D boxCollider2D;
+
+    float horizontal;
+    float vertical;
+
+    public float runSpeed = 10.0f;
+    public float jumpHeight = 10.0f;
+
+    public bool jump = false;
+    public LayerMask groundmask;
+
+    public Animator animator;
+
     // Start is called before the first frame update
+    private bool IsGrounded()
+    {
+        var groundCheck = Physics2D.BoxCast(boxCollider2D.bounds.center, boxCollider2D.bounds.size, 0f, Vector2.down,
+            .1f, groundmask);
+
+        Debug.Log(groundCheck.collider);
+        return groundCheck.collider != null;
+    }
+
     void Start()
     {
-         keyCodeToActions = new Dictionary<KeyCode, ActionDelegate>()
-        {
-            {
-                KeyCode.Space, (player) =>
-                {
-
-                    player.AddForce(Vector3.up, ForceMode2D.Impulse );
-                }
-            },
-            {
-                KeyCode.W, (player) =>
-                {
-
-                    player.AddForce(Vector3.forward, ForceMode2D.Impulse );
-                }
-            },
-            {
-                KeyCode.A, (player) =>
-                {
-
-                    player.AddForce(Vector3.left, ForceMode2D.Impulse );
-                }
-            },
-            {
-                KeyCode.D, (player) =>
-                {
-
-                    player.AddForce(Vector3.right, ForceMode2D.Impulse );
-                }
-            }
-        };
+        body = GetComponent<Rigidbody2D>();
+        boxCollider2D = GetComponent<BoxCollider2D>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        var player = GetComponent<Rigidbody2D>();
-        foreach (var keyCodeToAction in keyCodeToActions)
+        horizontal = Input.GetAxisRaw("Horizontal");
+
+        
+        body.transform.eulerAngles = new Vector3(body.transform.eulerAngles.x, horizontal < 0 ? 180 : 0,
+            body.transform.eulerAngles.z); // Flipped
+
+
+        animator.SetFloat("Speed", Mathf.Abs(horizontal));
+        
+        if (Input.GetButtonDown("Jump") && IsGrounded())
         {
-            if (Input.GetKeyDown(keyCodeToAction.Key))
-            {
-                keyCodeToAction.Value(player);
-            }
+            jump = true;
+            animator.SetBool("Jump", jump);
         }
+    }
+
+    private void FixedUpdate()
+    {
+        body.velocity = new Vector2(horizontal * runSpeed, jump ? jumpHeight : body.velocity.y);
+        jump = false;
+        animator.SetBool("Jump", jump);
     }
 }
