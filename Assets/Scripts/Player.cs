@@ -29,6 +29,15 @@ public class Player : MonoBehaviour
     }
     
     // Start is called before the first frame update
+    private bool IsGrounded()
+    {
+        var groundCheck = Physics2D.BoxCast(boxCollider2D.bounds.center, boxCollider2D.bounds.size, 0f, Vector2.down,
+            .1f, groundmask);
+
+        Debug.Log(groundCheck.collider);
+        return groundCheck.collider != null;
+    }
+
     void Start()
     {
         body = GetComponent<Rigidbody2D>();
