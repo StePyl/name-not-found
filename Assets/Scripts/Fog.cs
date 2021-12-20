@@ -66,7 +66,7 @@ public class Fog : MonoBehaviour
             this.modeController.ChangeSprite();
         }
         
-        if (this.modeController.Fog() && Input.GetButtonDown("Jump"))
+        if (this.modeController.Fog() && Input.GetButtonDown("Jump") )
         {
             body.velocity = Vector2.up * ascendSpeed;
         }
